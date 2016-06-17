@@ -1,0 +1,16 @@
+{
+  "name": "reap",
+  "version": "1.0.0",
+  "description": " reasonable time tracking CLI for Harvest",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jacob Håkansson",
+  "license": "ISC",
+  "dependencies": {
+    "harvest": "^0.1.5",
+    "inquirer": "^1.0.3",
+    "keytar": "^3.0.2"
+  }
+}

@@ -8,10 +8,14 @@
     "semi": [1, "always"],
     "indent": [1, 2],
     "no-console": 0,
-    "no-unused-vars": 1
+    "no-unused-vars": 1,
+    "no-var": 2
   },
   "env": {
     "mocha": true,
     "node": true
+  },
+  "globals": {
+    "Promise": false
   }
 }

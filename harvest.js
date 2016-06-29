@@ -84,11 +84,22 @@ const toggle = (config, entryId) => {
 //     .then(p => console.log(JSON.stringify(p)));
 // });
 
-conf.then(c => {
-  createEntry(c, 2598666, 1627003, moment().format('YYYY-MM-DD'), 'testing', 0.5)
-    .then(r => update(c, r.id, undefined, 1))
-    .then(r => del(c, r.id))
-    .then(r => console.log(r));
-});
+// conf.then(c => {
+//   createEntry(c, 2598666, 1627003, moment().format('YYYY-MM-DD'), 'testing', 0.5)
+//     .then(r => update(c, r.id, undefined, 1))
+//     .then(r => del(c, r.id))
+//     .then(r => console.log(r));
+// });
 
 //conf.then(c => del(c, 481446467)).then(r => console.log(r.statusText));
+
+const harvest = {
+  update: update,
+  toggle: toggle,
+  createEntry: createEntry,
+  getEntriesForDate: getEntriesForDate,
+  getEntriesForDateRange: getEntriesForDateRange,
+  del: del,
+  getProjects: getProjects
+};
+module.exports = harvest;

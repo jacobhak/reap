@@ -3,7 +3,8 @@ const moment = require('moment');
 
 const formatDuration = duration => {
   const m = moment.duration(duration, 'hours');
-  return `${m.hours()}:${m.minutes()}`;
+  const min = m.minutes() < 10 ? '0' + m.minutes() : m.minutes();
+  return `${m.hours()}:${min}`;
 };
 
 const durationSum = entries => entries.reduce((p, e) => p + e.hours, 0.0);
@@ -21,6 +22,8 @@ const logEntries = entries => {
     console.log(`${formatDuration(e.hours)} ${e.project} - ${e.task}${notes}`);
   });
 };
+
+exports.logEntries = logEntries;
 
 const printList = () => {
   require('./config').then(conf => {

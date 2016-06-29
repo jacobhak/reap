@@ -10,8 +10,11 @@
   "author": "Jacob Håkansson",
   "license": "ISC",
   "dependencies": {
+    "commander": "^2.9.0",
     "harvest": "^0.1.5",
     "inquirer": "^1.0.3",
-    "keytar": "^3.0.2"
+    "keytar": "^3.0.2",
+    "moment": "^2.13.0",
+    "node-fetch": "^1.5.3"
   }
 }

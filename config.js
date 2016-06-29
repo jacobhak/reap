@@ -29,13 +29,12 @@ const promptForConfig = () => {
 };
 
 const writeConfig = (answers) => {
-  console.log(`writing ${JSON.stringify(answers)}`);
   const write = () => {
     return fs.writeFile(file, JSON.stringify({
       'subdomain': answers.subdomain,
       'username': answers.username
     }, 2)).then(() => {
-      tar.replacePassword('reap-harvest', answers.username, answers.password);
+      tar.replacePassword('harvest-utils', answers.username, answers.password);
       return answers;
     });
   };
@@ -52,7 +51,7 @@ const readConfig = () => {
     .then(contents => {
       let c = JSON.parse(contents);
       return new Promise((res, rej) => {
-        const pass = tar.getPassword('reap-harvest', c.username);
+        const pass = tar.getPassword('harvest-utils', c.username);
         if (!pass) {
           rej();
         } else {
@@ -67,4 +66,5 @@ const readConfig = () => {
     });
 };
 
-module.exports = readConfig();
+exports.readConfig = readConfig;
+exports.promptForConfig = promptForConfig;

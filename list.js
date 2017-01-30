@@ -55,6 +55,10 @@ exports.projects = () => {
     const Time = harvest.TimeTracking;
     return new Promise(res => {
       Time.daily({}, (err, data) => {
+        if (err) {
+          console.log(err);
+          rej(err);
+        }
         res(data.projects);
       });
     });

@@ -1,6 +1,7 @@
 const inq = require('inquirer');
 const list = require('./list');
 const moment = require('moment');
+const harvest = require('./harvest');
 
 const task = (projects, project) => {
   const q = {
@@ -72,45 +73,41 @@ const queryTimeAndNote = () => {
   return inq.prompt(q);
 };
 
-const start = () => {
-  list.projects().then(projects => {
-    const projectQuestion = {
-      'type': 'list',
-      'name': 'project',
-      'message': 'select project: ',
-      'choices': projects.map(p => {
-        return {name: p.name, value: p.id};
-      })
-    };
+module.exports = (config, projects, date) => {
+  const projectQuestion = {
+    'type': 'list',
+    'name': 'project',
+    'message': 'select project: ',
+    'choices': projects.map(p => {
+      return {name: p.name, value: p.id};
+    })
+  };
 
-    return inq.prompt(projectQuestion)
-      .then(answer => {
-        return task(projects, answer.project).then(task => {
-          console.log(`${answer.project} - ${task.task}`);
-          return {project: answer.project, task: task.task};
-        });
-      })
-      .then(answers => {
-        return queryTimeAndNote().then(answer => {
-          answer.time = parseTime(answer.time);
-          Object.assign(answers, answer);
-          console.log(answers);
-          return answers;
-        });
-      })
-      .then(answers => {
-        return require('./time-tracking').startTimer({
-          project_id: answers.project,
-          task_id: answers.task,
-          hours: answers.time,
-          notes: answers.note
-        });
-      })
-      .then(() => {
-        console.log('started timer');
-      })
-      .catch(e => console.log(e));
-  });
+  return inq.prompt(projectQuestion)
+    .then(answer => {
+      return task(projects, answer.project).then(task => {
+        console.log(`${answer.project} - ${task.task}`);
+        return {project: answer.project, task: task.task};
+      });
+    })
+    .then(answers => {
+      return queryTimeAndNote().then(answer => {
+        answer.time = parseTime(answer.time);
+        Object.assign(answers, answer);
+        console.log(answers);
+        return answers;
+      });
+    })
+    .then(answers => {
+      return harvest.createEntry(config,
+                                 answers.project,
+                                 answers.task,
+                                 date || moment().format(),
+                                 answers.time,
+                                 answers.note);
+    })
+    .then(() => {
+      console.log('started timer');
+    })
+    .catch(e => console.log(e));
 };
-
-start();

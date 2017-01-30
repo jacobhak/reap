@@ -19,7 +19,7 @@ const request = (config, url, method, body) => {
     .catch(e => console.log(e));
 };
 
-const get = (config, url) => request(config, url, 'GET').then(r => r.json());
+const get = (config, url) => request(config, url, 'GET').then(r => r.json()).catch(e => console.log(e));
 const post = (config, url, body) => request(config, url, 'POST', body)
       .then(r => r.json());
 
@@ -33,7 +33,7 @@ const getEntriesForDate = (config, date) => {
   const dayOfYear = dateMoment.format('DDD');
   const year = dateMoment.format('YYYY');
   const url = `https://${config.subdomain}.harvestapp.com/daily/${dayOfYear}/${year}?slim=1`;
-  return get(config, url);
+  return get(config, url).then(r => r.day_entries);
 };
 
 const getProjects = config => {

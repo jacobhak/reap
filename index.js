@@ -4,19 +4,20 @@ const program = require('commander');
 const conf = require('./config');
 const harvest = require('./harvest');
 const list = require('./list');
+const parseDate = require('./time').parseDate;
 const start = require('./start');
 
 const confThenExec = (f, args) => conf.readConfig().then(c => f.apply(this, [c].concat(args)));
 
 // TODO: add week / last week etc. checkout chrono-node again.
 program
-  .command('list <day>', {isDefault: true})
+  .command('list <day>')
   .description('list tracked time for a specific day')
   .alias('l')
   .action(day => {
-    confThenExec(harvest.getEntriesForDate, [day])
+    confThenExec(harvest.getEntriesForDates, [parseDate(day)])
       .then(entries => {
-        list.logEntries(entries)
+        list.logDays(entries)
       });
   });
 

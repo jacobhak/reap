@@ -33,7 +33,7 @@ const getEntriesForDate = (config, date) => {
   const dayOfYear = dateMoment.format('DDD');
   const year = dateMoment.format('YYYY');
   const url = `https://${config.subdomain}.harvestapp.com/daily/${dayOfYear}/${year}?slim=1`;
-  return get(config, url).then(r => r.day_entries);
+  return get(config, url);
 };
 
 const getProjects = config => {
@@ -43,7 +43,11 @@ const getProjects = config => {
 
 const getEntriesForDateRange = (config, start, end) => {
   const range = moment.range(moment(start), moment(end)).toArray('days');
-  return Promise.all(range.map(d => getEntriesForDate(config, d)));
+  return getEntriesForDates(config, range);
+};
+
+const getEntriesForDates = (config, dates) => {
+  return Promise.all(dates.map(d => getEntriesForDate(config, d)));
 };
 
 const createEntry = (config, project, task, date, notes, hours) => {
@@ -71,34 +75,13 @@ const toggle = (config, entryId) => {
   return get(config, url);
 };
 
-// conf.then(c => {
-//   getEntriesForDate(c, '2016-06-29')
-//     .then(entries => console.log(entries));
-// });
-// conf.then(c => {
-//   getEntriesForDateRange(c, '2016-06-27', '2016-06-28')
-//     .then(e => console.log(e));
-// });
-// conf.then(c => {
-//   getProjects(c)
-//     .then(p => console.log(JSON.stringify(p)));
-// });
-
-// conf.then(c => {
-//   createEntry(c, 2598666, 1627003, moment().format('YYYY-MM-DD'), 'testing', 0.5)
-//     .then(r => update(c, r.id, undefined, 1))
-//     .then(r => del(c, r.id))
-//     .then(r => console.log(r));
-// });
-
-//conf.then(c => del(c, 481446467)).then(r => console.log(r.statusText));
-
 const harvest = {
   update: update,
   toggle: toggle,
   createEntry: createEntry,
   getEntriesForDate: getEntriesForDate,
   getEntriesForDateRange: getEntriesForDateRange,
+  getEntriesForDates: getEntriesForDates,
   del: del,
   getProjects: getProjects
 };

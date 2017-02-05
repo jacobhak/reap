@@ -18,30 +18,22 @@ const logProjectsAndTasks = projects => {
 
 const logEntries = entries => {
   entries.forEach(e => {
-    let notes = e.notes ? `, ${e.notes}` : '';
-    console.log(`${formatDuration(e.hours)} ${e.project} - ${e.task}${notes}`);
+    let notes = e.notes ? `${e.notes}` : '';
+    console.log(`${formatDuration(e.hours)} | ${e.project} | ${e.task} | ${notes}`);
   });
 };
 
+const logDays = days => {
+  days.forEach(d => {
+    console.log('\n' +  d.for_day);
+    logEntries(d.day_entries);
+  })
+};
+
+exports.logDays = logDays;
 exports.logEntries = logEntries;
 
 const printList = () => {
-  require('./config').then(conf => {
-    const harvest = new Harvest({
-      subdomain: conf.subdomain,
-      email: conf.username,
-      password: conf.password
-    });
-
-    const Time = harvest.TimeTracking;
-    Time.daily({}, (err, data) => {
-      console.log(data);
-      logProjectsAndTasks(data.projects);
-      logEntries(data.day_entries);
-      console.log(formatDuration(durationSum(data.day_entries)));
-    });
-
-  });
 };
 
 exports.projects = () => {

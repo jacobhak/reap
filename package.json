@@ -2,6 +2,9 @@
   "name": "reap",
   "version": "1.0.0",
   "description": " reasonable time tracking CLI for Harvest",
+  "bin": {
+    "reap": "index.js"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

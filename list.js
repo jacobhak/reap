@@ -1,13 +1,12 @@
-const Harvest = require('harvest');
 const moment = require('moment');
+const calc = require('./calc');
 
 const formatDuration = duration => {
   const m = moment.duration(duration, 'hours');
-  const min = m.minutes() < 10 ? '0' + m.minutes() : m.minutes();
-  return `${m.hours()}:${min}`;
+  return Math.floor(m.asHours()) + moment.utc(m.asMilliseconds()).format(':mm');
+//  const min = m.minutes() < 10 ? '0' + m.minutes() : m.minutes();
+//  return `${m.hours()}:${min}`;
 };
-
-const durationSum = entries => entries.reduce((p, e) => p + e.hours, 0.0);
 
 const logProjectsAndTasks = projects => {
   projects.forEach(p => {
@@ -26,34 +25,15 @@ const logEntries = (entries, showDate) => {
 
 const logDays = days => {
   days.forEach(d => {
-    console.log('\n' +  d.for_day);
+    console.log(`${d.for_day} - ${formatDuration(calc.sumEntries(d.day_entries))}`);
     logEntries(d.day_entries);
-  })
+    console.log('');
+  });
+  const sum = calc.sumDays(days);
+  console.log(`Total hours tracked: ${formatDuration(sum)}`);
 };
 
 exports.logDays = logDays;
 exports.logEntries = logEntries;
 
-const printList = () => {
-};
 
-exports.projects = () => {
-  return require('./config').then(conf => {
-    const harvest = new Harvest({
-      subdomain: conf.subdomain,
-      email: conf.username,
-      password: conf.password
-    });
-
-    const Time = harvest.TimeTracking;
-    return new Promise(res => {
-      Time.daily({}, (err, data) => {
-        if (err) {
-          console.log(err);
-          rej(err);
-        }
-        res(data.projects);
-      });
-    });
-  });
-};

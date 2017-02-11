@@ -1,4 +1,6 @@
-const R = require('ramda');
+const {compose, flatten, map, prop, reject, isNil,
+       filter, propEq, isEmpty, curry, assoc, reduce,
+       add, difference} = require('ramda');
 const moment = require('moment');
 const list = require('./list');
 const inq = require('inquirer');
@@ -11,28 +13,28 @@ const isUserSure = () => {
     'message': 'Are you sure?',
     'choices': ['y', 'n']
   }).then(a => {
-    return a.sure === 'y' ? true : false
+    return a.sure === 'y' ? true : false;
   });
-}
+};
 
-const entriesFromDays = R.compose(R.flatten, R.map(R.prop('day_entries')));
+const entriesFromDays = compose(flatten, map(prop('day_entries')));
 
-const sumEntries = R.compose(R.reduce(R.add, 0), R.map(R.prop('hours')));
-const sumDays = R.compose(sumEntries, entriesFromDays);
+const sumEntries = compose(reduce(add, 0), map(prop('hours')));
+const sumDays = compose(sumEntries, entriesFromDays);
 
-const difference = (targetHours, days) => {
+const diff = (targetHours, days) => {
   const sum = sumDays(days);
   console.log(sum - targetHours);
-}
+};
 
 const roundDays = (config, roundTo, days) => {
   const roundToH = minutesToHours(roundTo);
   const entries = entriesFromDays(days);
-  const roundedEntries = R.reject(R.isNil, roundEntries(roundToH, entries));
-  const entriesToDelete = R.filter(R.propEq('hours', 0.0), roundedEntries);
-  const entriesToUpdate = R.difference(roundedEntries, entriesToDelete);
+  const roundedEntries = reject(isNil, roundEntries(roundToH, entries));
+  const entriesToDelete = filter(propEq('hours', 0.0), roundedEntries);
+  const entriesToUpdate = difference(roundedEntries, entriesToDelete);
 
-  if (!R.isEmpty(entriesToDelete) || !R.isEmpty(entriesToUpdate)) {
+  if (!isEmpty(entriesToDelete) || !isEmpty(entriesToUpdate)) {
     console.log('Will delete');
     list.logEntries(entriesToDelete, true);
     console.log('\nWill update');
@@ -41,9 +43,9 @@ const roundDays = (config, roundTo, days) => {
       if (sure) {
         console.log('updating harvest...');
         Promise.all([
-          Promise.all(R.map(harvest.update(config), entriesToUpdate)),
-          Promise.all(R.map(harvest.del(config), entriesToDelete))
-        ]).then(() => console.log('updated'))
+          Promise.all(map(harvest.update(config), entriesToUpdate)),
+          Promise.all(map(harvest.del(config), entriesToDelete))
+        ]).then(() => console.log('updated'));
       } else {
         console.log('aborting');
       }
@@ -55,21 +57,20 @@ const roundDays = (config, roundTo, days) => {
 
 const minutesToHours = min => 1 / moment.duration(min, 'm').asHours();
 
-const roundEntries = R.curry(
-  (roundTo, entries) => R.map(roundEntry(roundTo), entries));
+const roundEntries = curry(
+  (roundTo, entries) => map(roundEntry(roundTo), entries));
 
 const round = (roundTo, hours) => Math.round(hours * roundTo) / roundTo;
 
-const roundEntry = R.curry((roundTo, entry) => {
+const roundEntry = curry((roundTo, entry) => {
   const newHours = round(roundTo, entry.hours);
   const isChanged = entry.hours !== newHours;
-  return isChanged ? R.assoc('hours', newHours, entry) : null;
+  return isChanged ? assoc('hours', newHours, entry) : null;
 });
 
-const exportWithSameName = a => R.zipObj(R.map(R.prop('name'), a), a);
-module.exports = exportWithSameName([
-  roundDays,
-  difference,
-  sumDays,
-  sumEntries
-]);
+module.exports = {
+  roundDays: roundDays,
+  difference: diff,
+  sumDays: sumDays,
+  sumEntries: sumEntries
+};

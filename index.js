@@ -42,9 +42,8 @@ program
   .description('configure the harvest account to be used')
   .action(conf.promptForConfig);
 
-// TODO: round
 program
-  .command('round <dayOrRange> <closestMinutes>')
+  .command('round <dayOrWeek> <roundToMinutes>')
   .alias('r')
   .description('round all entries within a given date/range to the closest specified minutes')
   .action((date, closestMinutes) => {
@@ -57,6 +56,17 @@ program
   });
 
 // TODO: diff
+program
+  .command('diff <dayOrWeek> <targetHours>')
+  .alias('d')
+  .description('calculates the difference between logged time for a given date/range and a specified target hours')
+  .action((date, targetHours) => {
+    confThenExec(harvest.getEntriesForDates, [parseDate(date)])
+      .then(days => {
+        calc.difference(targetHours, days);
+      });
+  });
+
 
 // TODO: fill
 

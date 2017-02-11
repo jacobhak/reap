@@ -15,9 +15,19 @@ const isUserSure = () => {
   });
 }
 
+const entriesFromDays = R.compose(R.flatten, R.map(R.prop('day_entries')));
+
+const sumEntries = R.compose(R.reduce(R.add, 0), R.map(R.prop('hours')));
+const sumDays = R.compose(sumEntries, entriesFromDays);
+
+const difference = (targetHours, days) => {
+  const sum = sumDays(days);
+  console.log(sum - targetHours);
+}
+
 const roundDays = (config, roundTo, days) => {
   const roundToH = minutesToHours(roundTo);
-  const entries = R.flatten(R.map(R.prop('day_entries'), days));
+  const entries = entriesFromDays(days);
   const roundedEntries = R.reject(R.isNil, roundEntries(roundToH, entries));
   const entriesToDelete = R.filter(R.propEq('hours', 0.0), roundedEntries);
   const entriesToUpdate = R.difference(roundedEntries, entriesToDelete);
@@ -53,7 +63,13 @@ const round = (roundTo, hours) => Math.round(hours * roundTo) / roundTo;
 const roundEntry = R.curry((roundTo, entry) => {
   const newHours = round(roundTo, entry.hours);
   const isChanged = entry.hours !== newHours;
-  return isChanged? R.assoc('hours', newHours, entry) : null;
+  return isChanged ? R.assoc('hours', newHours, entry) : null;
 });
 
-module.exports.roundDays = roundDays;
+const exportWithSameName = a => R.zipObj(R.map(R.prop('name'), a), a);
+module.exports = exportWithSameName([
+  roundDays,
+  difference,
+  sumDays,
+  sumEntries
+]);

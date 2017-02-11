@@ -19,6 +19,7 @@ module.exports.parseDate = date => {
   const mapping = {
     'today': [moment()],
     'week': currentWeek,
+    'thisweek': currentWeek,
     'currentweek': currentWeek,
     'lastweek': lastWeek,
     'nextweek': nextWeek

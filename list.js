@@ -16,10 +16,11 @@ const logProjectsAndTasks = projects => {
   });
 };
 
-const logEntries = entries => {
+const logEntries = (entries, showDate) => {
   entries.forEach(e => {
-    let notes = e.notes ? `${e.notes}` : '';
-    console.log(`${formatDuration(e.hours)} | ${e.project} | ${e.task} | ${notes}`);
+    const notes = e.notes ? ` | ${e.notes}` : '';
+    const date = showDate ? `${e.spent_at} | ` : '';
+    console.log(`${date}${formatDuration(e.hours)} | ${e.project} | ${e.task}${notes}`);
   });
 };
 

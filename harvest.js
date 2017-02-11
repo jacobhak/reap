@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const conf = require('./config');
 const moment = require('moment');
 require('moment-range');
+const R = require('ramda');
 
 const request = (config, url, method, body) => {
   const base64 = new Buffer(config.username + ':' + config.password).toString('base64');
@@ -23,10 +24,10 @@ const get = (config, url) => request(config, url, 'GET').then(r => r.json()).cat
 const post = (config, url, body) => request(config, url, 'POST', body)
       .then(r => r.json());
 
-const del = (config, entryId) => {
-  const url = `https://${config.subdomain}.harvestapp.com/daily/delete/${entryId}`;
+const del = R.curry((config, {id}) => {
+  const url = `https://${config.subdomain}.harvestapp.com/daily/delete/${id}`;
   return request(config, url, 'DELETE');
-};
+});
 
 const getEntriesForDate = (config, date) => {
   const dateMoment = moment(date);
@@ -50,7 +51,7 @@ const getEntriesForDates = (config, dates) => {
   return Promise.all(dates.map(d => getEntriesForDate(config, d)));
 };
 
-const createEntry = (config, project, task, date, notes, hours) => {
+const createEntry = (config, project, task, date, hours, notes) => {
   const url = `https://${config.subdomain}.harvestapp.com/daily/add`;
   const body = {
     project_id: project,
@@ -59,16 +60,17 @@ const createEntry = (config, project, task, date, notes, hours) => {
     hours: hours,
     notes: notes
   };
+  console.log(body);
   return post(config, url, body);
 };
 
-const update = (config, entryId, notes, hours) => {
-  const url = `https://${config.subdomain}.harvestapp.com/daily/update/${entryId}`;
+const update = R.curry((config, {id, notes, hours}) => {
+  const url = `https://${config.subdomain}.harvestapp.com/daily/update/${id}`;
   return post(config, url, {
     notes: notes,
     hours: hours
   });
-};
+});
 
 const toggle = (config, entryId) => {
   const url = `https://${config.subdomain}.harvestapp.com/daily/timer/${entryId}`;

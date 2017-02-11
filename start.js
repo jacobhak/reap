@@ -42,10 +42,6 @@ const parseTime = time => {
     return 0.0;
   }
 };
-// console.log(parseTime(':30'));
-// console.log(parseTime('3:30'));
-// console.log(parseTime('.75'));
-// console.log(parseTime('3.75'));
 
 const queryTimeAndNote = () => {
   const q = [
@@ -94,7 +90,6 @@ module.exports = (config, projects, date) => {
       return queryTimeAndNote().then(answer => {
         answer.time = parseTime(answer.time);
         Object.assign(answers, answer);
-        console.log(answers);
         return answers;
       });
     })

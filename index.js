@@ -6,6 +6,7 @@ const harvest = require('./harvest');
 const list = require('./list');
 const parseDate = require('./time').parseDate;
 const start = require('./start');
+const calc = require('./calc');
 
 const confThenExec = (f, args) => conf.readConfig().then(c => f.apply(this, [c].concat(args)));
 
@@ -41,12 +42,26 @@ program
   .description('configure the harvest account to be used')
   .action(conf.promptForConfig);
 
+// TODO: round
+program
+  .command('round <dayOrRange> <closestMinutes>')
+  .alias('r')
+  .description('round all entries within a given date/range to the closest specified minutes')
+  .action((date, closestMinutes) => {
+    conf.readConfig().then(config => {
+      harvest.getEntriesForDates(config, parseDate(date))
+        .then(days => {
+          calc.roundDays(config, parseInt(closestMinutes), days);
+        });
+    });
+  });
 
+// TODO: diff
+
+// TODO: fill
 
 // TODO: history, then allow to start from history
 
 // TODO: cache projects and tasks
-
-
 
 program.parse(process.argv);

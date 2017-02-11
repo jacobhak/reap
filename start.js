@@ -1,19 +1,8 @@
 const inq = require('inquirer');
 const moment = require('moment');
 const harvest = require('./harvest');
-const {defaultTo, __, map} = require('ramda');
-
-const task = (projects, project) => {
-  const q = {
-    'type': 'list',
-    'name': 'task',
-    'message': 'select task: ',
-    'choices': projects.filter(p => p.id === project)[0].tasks.map(t => {
-      return {name : t.name, value: t.id};
-    })
-  };
-  return inq.prompt(q);
-};
+const {defaultTo, __, map, find, propEq, merge, zip, reject} = require('ramda');
+const calc = require('./calc');
 
 const parseColonTime = time => {
   const split = time.split(':');
@@ -43,34 +32,40 @@ const parseTime = time => {
   }
 };
 
-const queryTimeAndNote = () => {
-  const q = [
-    {
-      'type': 'input',
-      'name': 'time',
-      'message': 'Time: ',
-      'default': '0.0',
-      'validate': v => {
-        let valid = v.match(/:|\.|\d+/);
-        if (valid) {
-          return true;
-        } else {
-          return 'Time must contain : or . or a number';
-        }
-      }
-    },
-    {
-      'type': 'input',
-      'name': 'note',
-      'message': "Note: ",
-      'default': ''
+const timeQuery = {
+  'type': 'input',
+  'name': 'time',
+  'message': 'Time: ',
+  'default': '0.0',
+  'validate': v => {
+    let valid = v.match(/:|\.|\d+/);
+    if (valid) {
+      return true;
+    } else {
+      return 'Time must contain : or . or a number';
     }
-  ];
-  return inq.prompt(q);
+  }
 };
 
-module.exports = (config, projects, dateRange) => {
-  const projectQuestion = {
+const noteQuery = {
+  'type': 'input',
+  'name': 'note',
+  'message': "Note: ",
+  'default': ''
+};
+
+const taskQuery = (projects, project) => {
+  return {
+    'type': 'list',
+    'name': 'task',
+    'message': 'select task: ',
+    'choices': map(t => {
+      return {name: t.name, value: t.id};
+    }, find(propEq('id', project), projects).tasks)
+  };
+};
+const projectQuestion = projects => {
+  return {
     'type': 'list',
     'name': 'project',
     'message': 'select project: ',
@@ -78,21 +73,48 @@ module.exports = (config, projects, dateRange) => {
       return {name: p.name, value: p.id};
     })
   };
+};
 
-  return inq.prompt(projectQuestion)
-    .then(answer => {
-      return task(projects, answer.project).then(task => {
-//        console.log(`${answer.project} - ${task.task}`);
-        return {project: answer.project, task: task.task};
-      });
-    })
+const queryEntry = (config, projects, skipTime) => {
+  return inq.prompt(projectQuestion(projects))
+    .then(a => inq.prompt(taskQuery(projects, a.project)).then(merge(a)))
     .then(answers => {
-      return queryTimeAndNote().then(answer => {
+      if (skipTime) {
+        return answers;
+      }
+      return inq.prompt(timeQuery).then(answer => {
         answer.time = parseTime(answer.time);
         Object.assign(answers, answer);
         return answers;
       });
     })
+    .then(a => inq.prompt(noteQuery).then(merge(a)));
+};
+
+const fillToTarget = (config, target, dates, projects) => {
+  return queryEntry(config, projects, true)
+    .then(answers => {
+      return harvest.getEntriesForDates(config, dates)
+        .then(calc.fill(target))
+        .then(fillTimes => {
+          const pairsWithoutZeroFill = reject(([d, f]) => f === 0, zip(dates, fillTimes));
+          return Promise.all(map(([day, fillTime]) => {
+            return harvest.createEntry(config,
+                                       answers.project,
+                                       answers.task,
+                                       day.format('YYYY-MM-DD'),
+                                       fillTime,
+                                       answers.note);
+          }, pairsWithoutZeroFill));
+        });
+    });
+};
+
+module.exports.fillToTarget = fillToTarget;
+module.exports.queryEntry = queryEntry;
+
+module.exports.start = (config, projects, dateRange) => {
+  return queryEntry(config, projects, false)
     .then(answers => {
       const partiallyAppliedCall = harvest.createEntry(config,
                                                        answers.project,

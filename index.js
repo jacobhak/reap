@@ -24,14 +24,18 @@ program
 
 // TODO: allow specification of project, task, date, time, note
 program
-  .command('start [dayOrWeek]')
-  .description('start a timer')
+  .command('start [dayOrWeek] [targetHours]')
+  .description('start a timer, optionally for a range and filling up target hours')
   .alias('s')
-  .action(day => {
+  .action((range, target) => {
     confThenExec(config => {
       return harvest.getProjects(config)
         .then(projects => {
-          return start(config, projects, parseDate(day || 'today'));
+          if (target) {
+            return start.fillToTarget(config, parseInt(target), parseDate(range || 'today'), projects);
+          } else {
+            return start.start(config, projects, parseDate(range || 'today'));
+          }
         });
     });
   });

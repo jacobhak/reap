@@ -1,6 +1,6 @@
 const {compose, flatten, map, prop, reject, isNil,
        filter, propEq, isEmpty, curry, assoc, reduce,
-       add, difference} = require('ramda');
+       add, difference, subtract, max} = require('ramda');
 const moment = require('moment');
 const list = require('./list');
 const inq = require('inquirer');
@@ -26,6 +26,11 @@ const diff = (targetHours, days) => {
   const sum = sumDays(days);
   console.log(sum - targetHours);
 };
+
+const fill = curry((target, days) => {
+  const sumDay = compose(sumEntries, prop('day_entries'));
+  return map(compose(max(0), subtract(target)), map(sumDay, days));
+});
 
 const roundDays = (config, roundTo, days) => {
   const roundToH = minutesToHours(roundTo);
@@ -72,5 +77,6 @@ module.exports = {
   roundDays: roundDays,
   difference: diff,
   sumDays: sumDays,
-  sumEntries: sumEntries
+  sumEntries: sumEntries,
+  fill: fill
 };

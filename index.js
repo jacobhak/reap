@@ -55,7 +55,6 @@ program
     });
   });
 
-// TODO: diff
 program
   .command('diff <dayOrWeek> <targetHours>')
   .alias('d')
@@ -72,6 +71,6 @@ program
 
 // TODO: history, then allow to start from history
 
-// TODO: cache projects and tasks
+// TODO: cache projects and tasks. Why?
 
 program.parse(process.argv);

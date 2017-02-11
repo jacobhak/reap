@@ -27,11 +27,11 @@ program
   .command('start [dayOrWeek]')
   .description('start a timer')
   .alias('s')
-  .action(() => {
+  .action(day => {
     confThenExec(config => {
       return harvest.getProjects(config)
         .then(projects => {
-          return start(config, projects);
+          return start(config, projects, parseDate(day || 'today'));
         });
     });
   });

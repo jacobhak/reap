@@ -51,18 +51,17 @@ const getEntriesForDates = (config, dates) => {
   return Promise.all(dates.map(d => getEntriesForDate(config, d)));
 };
 
-const createEntry = (config, project, task, date, hours, notes) => {
+const createEntry = R.curry((config, project, task, date, hours, notes) => {
   const url = `https://${config.subdomain}.harvestapp.com/daily/add`;
   const body = {
     project_id: project,
     task_id: task,
-    spent_on: date,
+    spent_at: date,
     hours: hours,
     notes: notes
   };
-  console.log(body);
   return post(config, url, body);
-};
+});
 
 const update = R.curry((config, {id, notes, hours}) => {
   const url = `https://${config.subdomain}.harvestapp.com/daily/update/${id}`;

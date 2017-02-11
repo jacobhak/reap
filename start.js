@@ -1,7 +1,7 @@
 const inq = require('inquirer');
-const list = require('./list');
 const moment = require('moment');
 const harvest = require('./harvest');
+const {defaultTo, __, map} = require('ramda');
 
 const task = (projects, project) => {
   const q = {
@@ -39,7 +39,7 @@ const parseTime = time => {
   } else if (time.match(/\./)) {
     return parseDotTime(time);
   } else {
-    return 0.0;
+    return defaultTo(0.0, parseInt(time));
   }
 };
 
@@ -51,11 +51,11 @@ const queryTimeAndNote = () => {
       'message': 'Time: ',
       'default': '0.0',
       'validate': v => {
-        let valid = v.match(/:|\./);
+        let valid = v.match(/:|\.|\d+/);
         if (valid) {
           return true;
         } else {
-          return 'Time must contain : or .';
+          return 'Time must contain : or . or a number';
         }
       }
     },
@@ -69,7 +69,7 @@ const queryTimeAndNote = () => {
   return inq.prompt(q);
 };
 
-module.exports = (config, projects, date) => {
+module.exports = (config, projects, dateRange) => {
   const projectQuestion = {
     'type': 'list',
     'name': 'project',
@@ -82,7 +82,7 @@ module.exports = (config, projects, date) => {
   return inq.prompt(projectQuestion)
     .then(answer => {
       return task(projects, answer.project).then(task => {
-        console.log(`${answer.project} - ${task.task}`);
+//        console.log(`${answer.project} - ${task.task}`);
         return {project: answer.project, task: task.task};
       });
     })
@@ -94,12 +94,14 @@ module.exports = (config, projects, date) => {
       });
     })
     .then(answers => {
-      return harvest.createEntry(config,
-                                 answers.project,
-                                 answers.task,
-                                 date || moment().format(),
-                                 answers.time,
-                                 answers.note);
+      const partiallyAppliedCall = harvest.createEntry(config,
+                                                       answers.project,
+                                                       answers.task,
+                                                       __,
+                                                       answers.time,
+                                                       answers.note);
+      const formatAndApply = m => partiallyAppliedCall(m.format('YYYY-MM-DD'));
+      return Promise.all(map(formatAndApply, dateRange));
     })
     .then(() => {
       console.log('started timer');

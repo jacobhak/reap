@@ -1,6 +1,7 @@
 const Moment = require('moment');
 const MomentRange = require('moment-range');
 const moment = MomentRange.extendMoment(Moment);
+const {dropLast} = require('ramda');
 
 const currentMonday = moment().startOf('isoweek');
 const currentSunday = moment().endOf('isoweek');
@@ -10,10 +11,15 @@ const nextMonday = moment(currentMonday).add(1, 'week');
 const nextSunday = moment(currentSunday).add(1, 'week');
 
 const rangeArray = (a, b) => Array.from(moment.range(a, b).by('day'));
+const weekDays = dropLast(2);
 
 const currentWeek = rangeArray(currentMonday, currentSunday);
 const lastWeek = rangeArray(lastMonday, lastSunday);
 const nextWeek = rangeArray(nextMonday, nextSunday);
+
+const currentWeekdays = weekDays(currentWeek);
+const lastWeekdays = weekDays(lastWeek);
+const nextWeekdays = weekDays(nextWeek);
 
 module.exports.parseDate = date => {
   const mapping = {
@@ -22,9 +28,13 @@ module.exports.parseDate = date => {
     'thisweek': currentWeek,
     'currentweek': currentWeek,
     'lastweek': lastWeek,
-    'nextweek': nextWeek
+    'nextweek': nextWeek,
+    'weekdays': currentWeekdays,
+    'currentweekdays': currentWeekdays,
+    'lastweekdays': lastWeekdays,
+    'nextweekdays': nextWeekdays
   };
   
-  return mapping[date.toLowerCase()] || moment(date);
+  return mapping[date.toLowerCase()] || [moment(date)];
 };
 

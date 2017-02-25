@@ -21,6 +21,11 @@ const currentWeekdays = weekDays(currentWeek);
 const lastWeekdays = weekDays(lastWeek);
 const nextWeekdays = weekDays(nextWeek);
 
+const lastSaturday = moment(lastMonday).subtract(2, 'days');
+const currentFriday = moment(currentSunday).subtract(2, 'days');
+
+const hWeek = rangeArray(lastSaturday, currentFriday);
+
 module.exports.parseDate = date => {
   const mapping = {
     'today': [moment()],
@@ -32,7 +37,8 @@ module.exports.parseDate = date => {
     'weekdays': currentWeekdays,
     'currentweekdays': currentWeekdays,
     'lastweekdays': lastWeekdays,
-    'nextweekdays': nextWeekdays
+    'nextweekdays': nextWeekdays,
+    'hweek': hWeek
   };
   
   return mapping[date.toLowerCase()] || [moment(date)];

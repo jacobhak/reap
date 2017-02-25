@@ -7,6 +7,8 @@ const list = require('./list');
 const parseDate = require('./time').parseDate;
 const start = require('./start');
 const calc = require('./calc');
+const history = require('./history');
+
 
 const confThenExec = (f, args) => conf.readConfig().then(c => f.apply(this, [c].concat(args)));
 
@@ -76,6 +78,13 @@ program
 // TODO: edit: edit/delete
 
 // TODO: history, then allow to start from history
+program
+  .command('history')
+  .alias('h')
+  .description('caches history on file')
+  .action(() => {
+    confThenExec(history.storeHistory, []);
+  });
 
 // TODO: cache projects and tasks. Why?
 

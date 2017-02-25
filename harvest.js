@@ -76,6 +76,17 @@ const toggle = (config, entryId) => {
   return get(config, url);
 };
 
+const getUserId = (config) => {
+  return get(config, `https://${config.subdomain}.harvestapp.com/account/who_am_i`).then(u => u.user.id);
+};
+
+const getEntriesForUserAndRange = R.curry((config, start, end) => {
+  return getUserId(config)
+    .then(id => {
+      return get(config, `https://${config.subdomain}.harvestapp.com/people/${id}/entries?from=${start}&to=${end}`);
+    });
+});
+
 const harvest = {
   update: update,
   toggle: toggle,
@@ -83,6 +94,7 @@ const harvest = {
   getEntriesForDate: getEntriesForDate,
   getEntriesForDateRange: getEntriesForDateRange,
   getEntriesForDates: getEntriesForDates,
+  getEntriesForUserAndRange: getEntriesForUserAndRange,
   del: del,
   getProjects: getProjects
 };
